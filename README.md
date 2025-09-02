@@ -1,61 +1,117 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 💰 Finance API – Personal Finance Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API for **personal finance management**, built with **Laravel**.  
+It allows users to track **incomes and expenses**, organize them into **categories**, and generate **monthly reports** with ease and security.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Features
+- User authentication with **Laravel Sanctum**
+- CRUD for financial transactions (incomes & expenses)
+- Category management (default + custom)
+- Reports:
+  - Monthly summary (incomes, expenses, balance)
+  - Totals grouped by category
+- Export data in **CSV/JSON**
+- Soft deletes for transactions
+- API documentation with Swagger (l5-swagger)
+- Automated tests (Feature and Unit)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠️ Tech Stack
+- [Laravel 12](https://laravel.com/)
+- [Laravel Sanctum](https://laravel.com/docs/10.x/sanctum) – token-based authentication
+- [MySQL/PostgreSQL](https://www.postgresql.org/) – database
+- [Swagger (l5-swagger)](https://github.com/DarkaOnLine/L5-Swagger) – API docs
+- [Pest / PHPUnit](https://pestphp.com/) – testing
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📂 Data Model
+- **Users (users)**  
+- **Transactions (transactions)** → description, amount, type (income/expense), date, category, user  
+- **Categories (categories)** → e.g. Food, Transport, Salary, Entertainment  
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Relationships:  
+- `User hasMany Transactions`  
+- `Transaction belongsTo User`  
+- `Category hasMany Transactions`  
+- `Transaction belongsTo Category`  
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📌 Main Endpoints
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Authentication
+- `POST /register` → Register a new user  
+- `POST /login` → Login and generate token  
+- `POST /logout` → Logout and revoke token  
 
-### Premium Partners
+### Transactions
+- `GET /transactions` → List all user’s transactions  
+- `POST /transactions` → Create a new transaction  
+- `GET /transactions/{id}` → Get transaction details  
+- `PUT /transactions/{id}` → Update a transaction  
+- `DELETE /transactions/{id}` → Delete a transaction  
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Reports
+- `GET /reports/monthly` → Current month summary  
+- `GET /reports/monthly?month=08&year=2025` → Specific month summary  
+- `GET /reports/by-category` → Totals grouped by category  
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## ▶️ Getting Started
 
-## Code of Conduct
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/finance-api.git
+cd finance-api
+2. Install dependencies
+bash
+Copiar código
+composer install
+3. Configure environment
+bash
+Copiar código
+cp .env.example .env
+php artisan key:generate
+Update .env with your database credentials.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. Run migrations & seeders
+bash
+Copiar código
+php artisan migrate --seed
+5. Start the server
+bash
+Copiar código
+php artisan serve
+API will be available at: http://127.0.0.1:8000
 
-## Security Vulnerabilities
+🧪 Running Tests
+bash
+Copiar código
+php artisan test
+📖 API Documentation
+Swagger UI available at:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+bash
+Copiar código
+/api/documentation
+☁️ Deployment
+The project can be deployed on Render, Railway, or Heroku.
+Example:
+👉 https://finance-api.onrender.com
 
-## License
+👨‍💻 Author
+Developed by Aires Viotto 🚀
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+yaml
+Copiar código
+
+---
+
+This README is **professional, recruiter-friendly, and production-ready** ✅  
+
+Would you like me to also create a **step-by-step artisan commands + migration starter code (users, categories, transactions)** so you can immediately start coding the project structure?

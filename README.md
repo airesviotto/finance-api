@@ -66,52 +66,39 @@ Relationships:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/finance-api.git
+git clone https://github.com/airesviotto/finance-api.git
 cd finance-api
+
 2. Install dependencies
 bash
-Copiar código
 composer install
+
 3. Configure environment
 bash
-Copiar código
 cp .env.example .env
 php artisan key:generate
 Update .env with your database credentials.
 
 4. Run migrations & seeders
 bash
-Copiar código
 php artisan migrate --seed
+
 5. Start the server
 bash
-Copiar código
 php artisan serve
 API will be available at: http://127.0.0.1:8000
 
 🧪 Running Tests
 bash
-Copiar código
 php artisan test
 📖 API Documentation
 Swagger UI available at:
 
 bash
-Copiar código
 /api/documentation
 ☁️ Deployment
-The project can be deployed on Render, Railway, or Heroku.
 Example:
 👉 https://finance-api.onrender.com
 
 👨‍💻 Author
 Developed by Aires Viotto 🚀
-
-yaml
-Copiar código
-
----
-
-This README is **professional, recruiter-friendly, and production-ready** ✅  
-
-Would you like me to also create a **step-by-step artisan commands + migration starter code (users, categories, transactions)** so you can immediately start coding the project structure?

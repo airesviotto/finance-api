@@ -3,13 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    protected $http;
+
+    public function __construct(HttpResponseService $http)
+    {
+        $this->http = $http;
+    }
+
     public function login(Request $request) {
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $credentials =  $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string', 'min:6']
@@ -30,10 +40,10 @@ class AuthController extends Controller
         // }
 
         if(!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return $this->http->unauthorized('Invalid credentials');
         }
 
-        $user = Auth::user();
+       
 
         //-----------------------------------//
         //---THIS BLOCK GET ALL DATA VALUES--//
@@ -68,9 +78,20 @@ class AuthController extends Controller
     }
 
     public function logout(Request $request) {
+        
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        var_dump($request->token);
+        exit;
+
+        if (!$request->user() || !$request->user()->currentAccessToken()) {
+            return $this->http->notFound('Operation error or access denied');
+        }
+        
         $request->user()->currentAccessToken()->delete();
-        return response()->json([
-            'message' => 'Logged out successfully'
-        ]);
+
+        return $this->http->ok('Logged out successfully');
+       
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -12,15 +13,18 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
-    }
+        if(!Auth::user()->tokenCan('view_all_transactions')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $user = Auth::user();
+
+        //List all transactions of the authenticated user
+        $transactions = $user->transactions()->with('category')->get();
+        
+        return response()->json($transactions);
     }
 
     /**
@@ -28,38 +32,93 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if(!Auth::user()->tokenCan('create_transaction')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
+
+        $request->validate([
+            'description' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'type' => ['required', 'in:income,expense'],
+            'date' => ['required', 'date'],
+            'category_id' => ['required', 'exists:categories,id'],
+        ]);
+
+        $transaction = Auth::user()->transactions()->create($request->all());
+
+        return response()->json([
+            'message' => 'Transaction created successfully',
+            'transaction' => $transaction
+        ],201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Transaction $transaction)
+    public function show($id)
     {
-        //
+         if(!Auth::user()->tokenCan('view_transaction')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
+
+        $transaction = Auth::user()->transactions()->with('category')->findOrFail($id);
+
+        return response()->json($transaction);
+        
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Transaction $transaction)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Transaction $transaction)
+    public function update(Request $request, $id)
     {
-        //
+
+         if(!Auth::user()->tokenCan('create_transaction')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
+
+        $transaction = Auth::user()->transactions()->findOrFail($id);
+
+        $request->validate([
+            'id' => ['required'],
+            'description' => ['sometimes', 'string', 'max:255'],
+            'amount' => ['sometimes', 'numeric', 'min:0'],
+            'type' => ['sometimes', 'in:income,expense'],
+            'date' => ['sometimes', 'date'],
+            'category_id' => ['sometimes', 'exists:categories,id'],
+        ]);
+
+        $transaction->update($request->all());
+
+        return response()->json([
+            'message' => 'Transaction updated successfully',
+            'transaction' => $transaction
+        ],200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Transaction $transaction)
+    public function destroy($id)
     {
-        //
+        if(!Auth::user()->tokenCan('delete_transaction')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
+
+        $transaction = Auth::user()->transactions()->findOrFail($id);
+        $transaction->delete();
+
+        return response()->json([
+            'message'=> 'Transaction deleted successfully'
+        ]);
     }
 }

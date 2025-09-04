@@ -3,24 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
+      protected $http;
+
+    public function __construct(HttpResponseService $http)
+    {
+        $this->http = $http;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         if(!Auth::user()->tokenCan('view_all_categories')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+           return $this->http->forbidden('Access denied');
         }
          // List all categories
         $categories = Category::all();
-        return response()->json($categories);
+        
+         return $this->http->ok($categories);
     }
 
     /**
@@ -29,9 +35,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
          if(!Auth::user()->tokenCan('create_category')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return $this->http->forbidden('Access denied');
         }
 
         $request->validate([
@@ -41,10 +45,7 @@ class CategoryController extends Controller
 
         $category = Category::create($request->all());
 
-        return response()->json([
-            'message'  => 'Category created successfully',
-            'category' => $category
-        ], 201);
+        return $this->http->ok($category, 'Category created successfully');
         
     }
 
@@ -55,19 +56,15 @@ class CategoryController extends Controller
     {
 
         if(!Auth::user()->tokenCan('view_category')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return $this->http->forbidden('Access denied');
         }
 
         $category = Category::find($id);
 
         if(!$category) {
-              return response()->json([
-                'error' => 'Transaction not found or access denied'
-            ], 404);
+             return $this->http->notFound('Transaction not found or access denied');
         }
-        return response()->json($category);
+        return $this->http->ok($category);
     }
 
     /**
@@ -77,17 +74,13 @@ class CategoryController extends Controller
     {
         
         if(!Auth::user()->tokenCan('update_category')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+           return $this->http->forbidden('Access denied');
         }
 
         $category = Category::find($id);
 
           if(!$category) {
-              return response()->json([
-                'error' => 'Transaction not found or access denied'
-            ], 404);
+            return $this->http->notFound('Transaction not found or access denied');
         }
 
         $request->validate([
@@ -97,10 +90,7 @@ class CategoryController extends Controller
 
         $category->update($request->all());
 
-        return response()->json([
-            'message'  => 'Category updated successfully',
-            'category' => $category
-        ],200);
+        return $this->http->ok($category, 'Category updated successfully');
     }
 
     /**
@@ -109,23 +99,17 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         if(!Auth::user()->tokenCan('delete_category')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return $this->http->forbidden('Access denied');
         }
 
         $category = Category::find($id);
 
         if(!$category) {
-              return response()->json([
-                'error' => 'Transaction not found or access denied'
-            ], 404);
+             return $this->http->notFound('Transaction not found or access denied');
         }
 
         $category->delete(); // soft delete
 
-        return response()->json([
-            'message' => 'Category deleted successfully'
-        ],200);
+        return $this->http->ok('Category deleted successfully');
     }
 }

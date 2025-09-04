@@ -6,16 +6,12 @@ It allows users to track **incomes and expenses**, organize them into **categori
 ---
 
 ## 🚀 Features
-- User authentication with **Laravel Sanctum**
-- CRUD for financial transactions (incomes & expenses)
-- Category management (default + custom)
-- Reports:
-  - Monthly summary (incomes, expenses, balance)
-  - Totals grouped by category
-- Export data in **CSV/JSON**
-- Soft deletes for transactions
-- API documentation with Swagger (l5-swagger)
-- Automated tests (Feature and Unit)
+- JWT-like authentication using Laravel Sanctum
+- Roles & Permissions for fine-grained access control
+- Soft deletes for transactions, categories, and users
+- Full CRUD for Transactions and Categories
+- Example users: Admin and User
+- Ready for SaaS expansion
 
 ---
 
@@ -28,12 +24,26 @@ It allows users to track **incomes and expenses**, organize them into **categori
 
 ---
 
+## Database Structure
+ER Diagram
+
+### Tables
+
+- users: stores user data, soft deletes enabled
+- roles: defines roles (Admin, User)
+- permissions: defines granular actions (create_transaction, delete_transaction, etc.)
+- role_user: pivot table linking users to roles
+- permission_role: pivot table linking roles to permissions
+- categories: transaction categories (Food, Transport, Salary, etc.)
+- transactions: user-specific transactions, soft deletes enabled
+- password_reset_tokens, sessions, personal_access_tokens: Laravel default tables for auth flows
+
 ## 📂 Data Model
 - **Users (users)**  
 - **Transactions (transactions)** → description, amount, type (income/expense), date, category, user  
 - **Categories (categories)** → e.g. Food, Transport, Salary, Entertainment  
 
-Relationships:  
+### Relationships:  
 - `User hasMany Transactions`  
 - `Transaction belongsTo User`  
 - `Category hasMany Transactions`  
@@ -41,24 +51,53 @@ Relationships:
 
 ---
 
+## Authentication & Permissions (Sanctum Integration)
+
+### 1 - Login
+
+- POST /login with email/password
+- System collects all roles & permissions of the user
+
+Creates Sanctum token with abilities:
+{
+  "user": { "id": 1, "name": "Admin User", "email": "admin@example.com" },
+  "token": "1|sQ9z9ljslKJDS8asdj...",
+  "abilities": ["create_transaction","view_transaction","delete_transaction","manage_users"]
+}
+
+### 2 - Protecting Routes
+Example:
+
+Route::post('/transactions', [TransactionController::class, 'store'])
+     ->middleware(['auth:sanctum', 'abilities:create_transaction']);
+
+Only users with the corresponding ability can access the endpoint.
+
+### 3 - Logout
+POST /logout revokes the current token
+
 ## 📌 Main Endpoints
 
 ### Authentication
-- `POST /register` → Register a new user  
-- `POST /login` → Login and generate token  
-- `POST /logout` → Logout and revoke token  
-
-### Transactions
-- `GET /transactions` → List all user’s transactions  
-- `POST /transactions` → Create a new transaction  
-- `GET /transactions/{id}` → Get transaction details  
-- `PUT /transactions/{id}` → Update a transaction  
-- `DELETE /transactions/{id}` → Delete a transaction  
+- Method	Endpoint	Description
+- POST	/login	Authenticate user and return token
+- POST	/logout	Revoke current token
 
 ### Reports
-- `GET /reports/monthly` → Current month summary  
-- `GET /reports/monthly?month=08&year=2025` → Specific month summary  
-- `GET /reports/by-category` → Totals grouped by category  
+- Method	Endpoint	Ability Required
+- GET	/categories	view_category
+- POST	/categories	create_category
+- GET	/categories/{id}	view_category
+- PUT	/categories/{id}	edit_category
+- DELETE	/categories/{id}	delete_category
+
+### Transactions
+- Method	Endpoint	Ability Required
+- GET	/transactions	view_transaction
+- POST	/transactions	create_transaction
+- GET	/transactions/{id}	view_transaction
+- PUT	/transactions/{id}	create_transaction (or edit_transaction)
+- DELETE	/transactions/{id}	delete_transaction
 
 ---
 

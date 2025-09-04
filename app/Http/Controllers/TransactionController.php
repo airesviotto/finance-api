@@ -14,9 +14,7 @@ class TransactionController extends Controller
     public function index()
     {
         if(!Auth::user()->tokenCan('view_all_transactions')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $user = Auth::user();
@@ -33,9 +31,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         if(!Auth::user()->tokenCan('create_transaction')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+             return response()->json(['error' => 'Access denied'], 403);
         }
 
         $request->validate([
@@ -58,16 +54,21 @@ class TransactionController extends Controller
      * Display the specified resource.
      */
     public function show($id)
-    {
-         if(!Auth::user()->tokenCan('view_transaction')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+    {   
+        
+        if (!Auth::user()->tokenCan('view_transaction')) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
-        $transaction = Auth::user()->transactions()->with('category')->findOrFail($id);
+        $transaction = Auth::user()->transactions()->with('category')->find($id);
 
-        return response()->json($transaction);
+        if (!$transaction) {
+            return response()->json([
+                'error' => 'Transaction not found or access denied'
+            ], 404);
+        }
+
+        return response()->json($transaction->user_id);
         
     }
 
@@ -79,15 +80,18 @@ class TransactionController extends Controller
     {
 
          if(!Auth::user()->tokenCan('create_transaction')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
-        $transaction = Auth::user()->transactions()->findOrFail($id);
+        $transaction = Auth::user()->transactions()->find($id);
+
+        if (!$transaction) {
+            return response()->json([
+                'error' => 'Transaction not found or access denied'
+            ], 404);
+        }
 
         $request->validate([
-            'id' => ['required'],
             'description' => ['sometimes', 'string', 'max:255'],
             'amount' => ['sometimes', 'numeric', 'min:0'],
             'type' => ['sometimes', 'in:income,expense'],
@@ -109,12 +113,17 @@ class TransactionController extends Controller
     public function destroy($id)
     {
         if(!Auth::user()->tokenCan('delete_transaction')) {
-            return response()->json([
-                'Access denied'
-            ],500);
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
-        $transaction = Auth::user()->transactions()->findOrFail($id);
+        $transaction = Auth::user()->transactions()->find($id);
+
+        if (!$transaction) {
+            return response()->json([
+                'error' => 'Transaction not found or access denied'
+            ], 404);
+        }
+        
         $transaction->delete();
 
         return response()->json([

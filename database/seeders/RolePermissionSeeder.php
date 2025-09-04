@@ -18,7 +18,7 @@ class RolePermissionSeeder extends Seeder
         $user = Role::where('name', 'User')->first();
 
         $allPermissions = Permission::all()->pluck('id');
-        $basicPermissions = Permission::whereIn('name', ['create_transaction', 'view_transaction'])->pluck('id');
+        $basicPermissions = Permission::whereIn('name', ['create_transaction', 'view_transaction', 'view_all_categories', 'view_category' ])->pluck('id');
 
         $admin->permissions()->sync($allPermissions);
         $user->permissions()->sync($basicPermissions);

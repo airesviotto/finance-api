@@ -13,7 +13,14 @@ class CategoryController extends Controller
      */
     public function index()
     {
-       
+        if(!Auth::user()->tokenCan('view_all_categories')) {
+            return response()->json([
+                'Access denied'
+            ],500);
+        }
+         // List all categories
+        $categories = Category::all();
+        return response()->json($categories);
     }
 
     /**

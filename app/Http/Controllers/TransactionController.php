@@ -21,11 +21,11 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        if(!Auth::user()->tokenCan('view_all_transactions')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('view_all_transactions')) {
             return $this->http->forbidden('Access denied');
         }
-
-        $user = Auth::user();
 
         //List all transactions of the authenticated user
         $transactions = $user->transactions()->with('category')->get();
@@ -38,7 +38,9 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        if(!Auth::user()->tokenCan('create_transaction')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('create_transaction')) {
             return $this->http->forbidden('Access denied');
         }
 
@@ -50,7 +52,8 @@ class TransactionController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
-        $transaction = Auth::user()->transactions()->create($request->all());
+        
+        $transaction = $user->transactions()->create($request->all());
 
         return response()->json([
             'message' => 'Transaction created successfully',
@@ -63,12 +66,13 @@ class TransactionController extends Controller
      */
     public function show($id)
     {   
-        
-        if (!Auth::user()->tokenCan('view_transaction')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->tokenCan('view_transaction')) {
             return $this->http->forbidden('Access denied');
         }
 
-        $transaction = Auth::user()->transactions()->with('category')->find($id);
+        $transaction = $user->transactions()->with('category')->find($id);
 
         if (!$transaction) {
             return $this->http->notFound('Transaction not found or access denied');
@@ -84,12 +88,13 @@ class TransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-
-         if(!Auth::user()->tokenCan('create_transaction')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+         if(!$user->tokenCan('create_transaction')) {
             return $this->http->forbidden('Access denied');
         }
 
-        $transaction = Auth::user()->transactions()->find($id);
+        $transaction = $user->transactions()->find($id);
 
         if (!$transaction) {
              return $this->http->notFound('Transaction not found or access denied');
@@ -113,11 +118,13 @@ class TransactionController extends Controller
      */
     public function destroy($id)
     {
-        if(!Auth::user()->tokenCan('delete_transaction')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('delete_transaction')) {
            return $this->http->forbidden('Access denied');
         }
 
-        $transaction = Auth::user()->transactions()->find($id);
+        $transaction = $user->transactions()->find($id);
 
         if (!$transaction) {
             return $this->http->notFound('Transaction not found or access denied');

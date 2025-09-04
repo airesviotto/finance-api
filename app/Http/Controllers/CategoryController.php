@@ -20,12 +20,14 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        if(!Auth::user()->tokenCan('view_all_categories')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('view_all_categories')) {
            return $this->http->forbidden('Access denied');
         }
          // List all categories
         $categories = Category::all();
-        
+
          return $this->http->ok($categories);
     }
 
@@ -33,8 +35,10 @@ class CategoryController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-         if(!Auth::user()->tokenCan('create_category')) {
+    {   
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+         if(!$user->tokenCan('create_category')) {
             return $this->http->forbidden('Access denied');
         }
 
@@ -54,8 +58,10 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        if(!Auth::user()->tokenCan('view_category')) {
+        if(!$user->tokenCan('view_category')) {
             return $this->http->forbidden('Access denied');
         }
 
@@ -72,8 +78,9 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
-        if(!Auth::user()->tokenCan('update_category')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('update_category')) {
            return $this->http->forbidden('Access denied');
         }
 
@@ -98,7 +105,9 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        if(!Auth::user()->tokenCan('delete_category')) {
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('delete_category')) {
             return $this->http->forbidden('Access denied');
         }
 

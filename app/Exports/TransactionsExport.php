@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Transaction;
+use App\Models\User;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Support\Facades\Auth;
@@ -10,19 +11,19 @@ use Illuminate\Http\Request;
 
 class TransactionsExport implements FromCollection, WithHeadings
 {
+    protected $user;
     protected $filters;
 
-    public function __construct(array $filters = [])
+    public function __construct(User $user, array $filters = [])
     {
         $this->filters = $filters;
+        $this->user = $user;
     }
 
     public function collection()
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
 
-        $query = $user->transactions()->with('category');
+        $query = $this->user->transactions()->with('category');
 
         if (!empty($this->filters['type'])) {
             $query->where('type', $this->filters['type']);

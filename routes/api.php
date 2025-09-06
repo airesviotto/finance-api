@@ -38,6 +38,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //EXPORT DATA OR FILE
     Route::get('/transactions/export', [TransactionController::class, 'exportFile']);
     Route::get('/transactions/export-data', [TransactionController::class, 'exportData']);
+    Route::post('/transactions/generate-report', [TransactionController::class, 'generateReport']);
+    
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
     Route::put('/transactions/{id}', [TransactionController::class, 'update']);
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);

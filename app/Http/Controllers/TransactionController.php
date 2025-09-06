@@ -8,6 +8,7 @@ use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\TransactionsExport;
+use App\Jobs\SendTransactionReport;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -175,7 +176,7 @@ class TransactionController extends Controller
 
         //Retorna download do arquivo
         return Excel::download(
-            new TransactionsExport($filters),
+            new TransactionsExport($user, $filters),
             $fileName,
             $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX
         );
@@ -211,9 +212,30 @@ class TransactionController extends Controller
                                     'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
                                 ];
                             });
-                            
+
         return $this->http->ok($transactions, 'Transaction export data');
     }
 
+    //create report
+    public function generateReport(Request $request)
+    {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+        if(!$user->tokenCan('view_all_transactions')) {
+           return $this->http->forbidden('Access denied');
+        }
 
+        $filters = $request->validate([
+            'type' => 'nullable|in:income,expense',
+            'start_date' => 'nullable|date|before_or_equal:end_date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+        // $filters = $request->only(['type', 'start_date', 'end_date']);
+        // shot the information in job queue
+        SendTransactionReport::dispatch($user->id, $filters)->delay(now()->addMinutes(1));
+
+        return response()->json([
+            'message' => 'Transaction report is being generated. You will be notified once it is ready.'
+        ]);
+    }
 }

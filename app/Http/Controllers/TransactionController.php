@@ -19,7 +19,7 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
          /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -27,10 +27,22 @@ class TransactionController extends Controller
             return $this->http->forbidden('Access denied');
         }
 
+        //filter
+        $filters = $request->only([
+            'category_ids', 'type', 'date_from', 'date_to', 
+            'amount_min', 'amount_max', 'sort_by', 'order', 
+            'page', 'per_page'
+        ]);
+
+        $perPage = $filters['per_page'] ?? 10; // 10 results per page
+
         //List all transactions of the authenticated user
-        $transactions = $user->transactions()->with('category')->get();
+        $transactions = $user->transactions()
+                            ->with('category')
+                            ->filter($filters)
+                            ->paginate($perPage);
         
-        return response()->json($transactions);
+        return $this->http->ok($transactions, 'Transaction list');
     }
 
     /**

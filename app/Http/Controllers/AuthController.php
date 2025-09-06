@@ -18,72 +18,43 @@ class AuthController extends Controller
 
     public function login(Request $request) {
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $credentials =  $request->validate([
+       
+        $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string', 'min:6']
         ]);
 
-        // $email = $request->email;
-        // $password = $request->password;
+        $email = $request->email;
+        $password = $request->password;
 
-        // $attempt = Auth::attempt([
-        //     'email' => $email,
-        //     'password' => $password
-        // ]);
+        $attempt = Auth::attempt([
+            'email' => $email,
+            'password' => $password
+        ]);
 
-        // if(!$attempt) {
-        //     return response()->json([
-        //         'message' => 'Unauthorized'
-        //     ]);
-        // }
-
-        if(!Auth::attempt($credentials)) {
+        if(!$attempt) {
             return $this->http->unauthorized('Invalid credentials');
         }
 
-       
-
-        //-----------------------------------//
-        //---THIS BLOCK GET ALL DATA VALUES--//
-        //-----------------------------------//
-       
-        //Load roles and permissions
-        // $user->load('roles.permissions');
-        // //get abillities from user
-        // $abillities = $user->roles->flatMap( function($role) {
-        //     return $role->permissions->pluck('name');
-        // })->unique()->toArray();
-
-        //-----------------------------------//
-        //---THIS BLOCK GET ONLY DATA ABILLITIES--//
-        //-----------------------------------//
-        $abillities = $user->roles()
-                    ->with('permissions')
-                    ->get()
-                    ->pluck('permissions.*.name')
-                    ->flatten()
-                    ->unique()
-                    ->toArray();
-
+         /** @var \App\Models\User $user */
+        $user = Auth::user();
+      
         //create token with abillities
-        $token = $user->createToken('api-token', $abillities, now()->addDay())->plainTextToken;
+        $token = $user->createToken( 'api-token', $user->abilities, now()->addDay() )->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
-            'abillities' => $abillities
+            'token' => $token
         ]);
     }
 
     public function logout(Request $request) {
         
-         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        //  /** @var \App\Models\User $user */
+        // $user = Auth::user();
 
-        var_dump($request->token);
-        exit;
+        // var_dump($request->token);
+        // exit;
 
         if (!$request->user() || !$request->user()->currentAccessToken()) {
             return $this->http->notFound('Operation error or access denied');

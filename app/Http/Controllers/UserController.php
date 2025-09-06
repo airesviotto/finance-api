@@ -7,6 +7,7 @@ use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -76,5 +77,50 @@ class UserController extends Controller
 
         return $this->http->ok(null, 'User account deleted');
     }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required','image','mimes:jpg,jpeg,png','max:2048']
+        ]);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Apagar avatar anterior se existir
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        // Salvar novo avatar
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $user->avatar = $path;
+        $user->save();
+
+        return $this->http->ok($user->avatar_url, 'Avatar updated successfully');
+
+    }
+
+    public function deleteAvatar()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->avatar) {
+            //Remove avatar file
+            Storage::disk('public')->delete($user->avatar);
+
+            // reset null to database
+            $user->avatar = null;
+            $user->save();
+        }
+
+        return response()->json([
+            'message' => 'Avatar deleted successfully',
+            'avatar_url' => $user->avatar_url // drop to gravatar
+        ]);
+    }
+
+    
 
 }

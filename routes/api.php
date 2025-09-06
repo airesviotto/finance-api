@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -26,6 +27,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'summary']);
     Route::get('/dashboard/advanced', [DashboardController::class, 'advancedSummary']);
+
+    //NOTIFICATIONS
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread', [NotificationController::class, 'unread']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications/unread/count', [NotificationController::class, 'unreadCount']);
 
     //TRANSACTIONS
     Route::get('/transactions', [TransactionController::class, 'index']);

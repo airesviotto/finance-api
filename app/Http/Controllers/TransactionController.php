@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Notifications\TransactionAlert;
 use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Routing\Controller;
 
 class TransactionController extends Controller
 {
@@ -68,6 +68,9 @@ class TransactionController extends Controller
         
         $transaction = $user->transactions()->create($request->all());
 
+        // Dispara a notificação
+        $user->notify(new TransactionAlert($transaction, 'created'));
+
         return response()->json([
             'message' => 'Transaction created successfully',
             'transaction' => $transaction
@@ -122,6 +125,8 @@ class TransactionController extends Controller
         ]);
 
         $transaction->update($request->all());
+
+        $user->notify(new TransactionAlert($transaction, 'updated'));
 
         return $this->http->ok($transaction, 'Transaction updated successfully');
     }

@@ -7,6 +7,9 @@ use App\Notifications\TransactionAlert;
 use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\TransactionsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
@@ -152,4 +155,65 @@ class TransactionController extends Controller
 
         return $this->http->ok('Transaction deleted successfully');
     }
+
+
+    //Exporting archieves
+    public function exportFile(Request $request)
+    {
+        
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if(!$user->tokenCan('view_all_transactions')) {
+           return $this->http->forbidden('Access denied');
+        }
+
+        // Captura filtros opcionais da requisição
+        $filters = $request->only(['type', 'start_date', 'end_date']);
+        $format = $request->get('format', 'xlsx'); // 'xlsx' ou 'csv'
+
+        $fileName = 'transactions_' . now()->format('Ymd_His') . '.' . $format;
+
+        //Retorna download do arquivo
+        return Excel::download(
+            new TransactionsExport($filters),
+            $fileName,
+            $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX
+        );
+
+    }
+
+    //export DATA to download as PDF,CSV or XLSX
+    public function exportData(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if(!$user->tokenCan('view_all_transactions')) {
+           return $this->http->forbidden('Access denied');
+        }
+
+        // Captura filtros opcionais da requisição
+        $filters = $request->only(['type', 'start_date', 'end_date', 'category_ids']);
+
+        // Consulta as transações do usuário com filtros aplicados
+        $transactions = $user->transactions()
+                            ->with('category')
+                            ->filter($filters)
+                            ->get()
+                            ->map(function ($transaction) {
+                                return [
+                                    'id' => $transaction->id,
+                                    'description' => $transaction->description,
+                                    'amount' => $transaction->amount,
+                                    'type' => $transaction->type,
+                                    'date' => $transaction->date->format('Y-m-d'),
+                                    'category' => $transaction->category ? $transaction->category->name : null,
+                                    'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
+                                ];
+                            });
+                            
+        return $this->http->ok($transactions, 'Transaction export data');
+    }
+
+
 }

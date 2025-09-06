@@ -6,9 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 
 Route::middleware('guest')->group(function() {
     Route::post('/login', [AuthController::class, 'login']);
@@ -37,6 +35,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //TRANSACTIONS
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
+    //EXPORT DATA OR FILE
+    Route::get('/transactions/export', [TransactionController::class, 'exportFile']);
+    Route::get('/transactions/export-data', [TransactionController::class, 'exportData']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
     Route::put('/transactions/{id}', [TransactionController::class, 'update']);
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
@@ -47,6 +48,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
  
     //LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);

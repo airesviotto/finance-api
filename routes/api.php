@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -21,6 +22,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/user/delete-account', [UserController::class, 'deleteProfile']);
     Route::post('/user/avatar', [UserController::class, 'updateAvatar']);
     Route::delete('/user/avatar', [UserController::class, 'deleteAvatar']);
+
+    //DASHBOARD
+    Route::get('/dashboard', [DashboardController::class, 'summary']);
+    Route::get('/dashboard/advanced', [DashboardController::class, 'advancedSummary']);
 
     //TRANSACTIONS
     Route::get('/transactions', [TransactionController::class, 'index']);

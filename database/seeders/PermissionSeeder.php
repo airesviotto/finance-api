@@ -20,6 +20,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_transaction', 'description' => 'Can view transactions'],
             ['name' => 'delete_transaction', 'description' => 'Can delete transactions'],
 
+            ['name' => 'view_dashboard', 'description' => 'Can view dashboard and filter it'],
+
             ['name' => 'view_all_categories', 'description' => 'Can view all categories'],
             ['name' => 'create_category', 'description' => 'Can create transactions'],
             ['name' => 'update_category', 'description' => 'Can update transactions'],

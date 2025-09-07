@@ -1,4 +1,4 @@
-💰 Finance API – Personal Finance Management
+# 💰 Finance API – Personal Finance Management
 
 A RESTful API for personal finance management, built with Laravel 12.
 Track incomes, expenses, categories, generate reports, and monitor user activity logs with advanced security.

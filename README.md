@@ -1,143 +1,160 @@
 # 💰 Finance API – Personal Finance Management
 
-A RESTful API for **personal finance management**, built with **Laravel**.  
-It allows users to track **incomes and expenses**, organize them into **categories**, and generate **monthly reports** with ease and security.
+#### A RESTful API for personal finance management, built with Laravel 12.
+#### Track incomes, expenses, categories, generate reports, and monitor user activity logs with advanced security.
 
----
+# 🚀 Key Features
 
-## 🚀 Features
-- JWT-like authentication using Laravel Sanctum
-- Roles & Permissions for fine-grained access control
-- Soft deletes for transactions, categories, and users
-- Full CRUD for Transactions and Categories
-- Example users: Admin and User
-- Ready for SaaS expansion
+#### Token-based authentication with Laravel Sanctum
 
----
+#### Roles & Permissions for fine-grained access control
 
-## 🛠️ Tech Stack
-- [Laravel 12](https://laravel.com/)
-- [Laravel Sanctum](https://laravel.com/docs/10.x/sanctum) – token-based authentication
-- [MySQL/PostgreSQL](https://www.postgresql.org/) – database
-- [Swagger (l5-swagger)](https://github.com/DarkaOnLine/L5-Swagger) – API docs
-- [Pest / PHPUnit](https://pestphp.com/) – testing
+#### Audit Trail: logs with payload, user agent, status code, and request duration (duration_ms)
 
----
+#### Rate Limiting per route to prevent abuse
 
-## Database Structure
-ER Diagram
+#### Full CRUD for Transactions and Categories
 
-### Tables
+#### Advanced reports: monthly average, category comparison, top expenses
 
-- users: stores user data, soft deletes enabled
-- roles: defines roles (Admin, User)
-- permissions: defines granular actions (create_transaction, delete_transaction, etc.)
-- role_user: pivot table linking users to roles
-- permission_role: pivot table linking roles to permissions
-- categories: transaction categories (Food, Transport, Salary, etc.)
-- transactions: user-specific transactions, soft deletes enabled
-- password_reset_tokens, sessions, personal_access_tokens: Laravel default tables for auth flows
+#### Jobs & Notifications for alerts and reports
 
-## 📂 Data Model
-- **Users (users)**  
-- **Transactions (transactions)** → description, amount, type (income/expense), date, category, user  
-- **Categories (categories)** → e.g. Food, Transport, Salary, Entertainment  
+#### Soft deletes for Transactions, Categories, and Users
 
-### Relationships:  
-- `User hasMany Transactions`  
-- `Transaction belongsTo User`  
-- `Category hasMany Transactions`  
-- `Transaction belongsTo Category`  
+#### Ready for SaaS expansion
 
----
+# 📂 Database Structure
+| Table                            | Description                                            |
+| -------------------------------- | ------------------------------------------------------ |
+| `activity_logs`                  | User activity logs (audit trail)                       |
+| `cache`, `cache_locks`           | Laravel cache tables                                   |
+| `categories`                     | Transaction categories (Food, Transport, Salary, etc.) |
+| `failed_jobs`, `jobs`            | Laravel queue & jobs management                        |
+| `migrations`                     | Database migrations                                    |
+| `notifications`                  | Laravel notifications                                  |
+| `password_reset_tokens`          | Password reset tokens                                  |
+| `permissions`, `permission_role` | Roles & permissions system                             |
+| `personal_access_tokens`         | Sanctum token storage                                  |
+| `roles`, `role_user`             | Role management & pivot table                          |
+| `sessions`                       | Laravel session table                                  |
+| `transactions`                   | User transactions (soft deletes enabled)               |
+| `users`                          | User table (soft deletes enabled)                      |
 
-## Authentication & Permissions (Sanctum Integration)
 
-### 1 - Login
+### ER Diagram
+User ---< Transaction >--- Category
+User ---< Role >---< Permission
+Transaction logs in activity_logs
 
-- POST /login with email/password
-- System collects all roles & permissions of the user
+Simple ASCII diagram. Can replace with actual ER diagram image if desired.
 
-Creates Sanctum token with abilities:
-{
-  "user": { "id": 1, "name": "Admin User", "email": "admin@example.com" },
-  "token": "1|sQ9z9ljslKJDS8asdj...",
-  "abilities": ["create_transaction","view_transaction","delete_transaction","manage_users"]
-}
+### Relationships
 
-### 2 - Protecting Routes
+User → hasMany Transactions
+
+Transaction → belongsTo User
+
+Category → hasMany Transactions
+
+Transaction → belongsTo Category
+
+# 🔒 Authentication & Permissions
+
+Login: POST /login → returns Sanctum token with user abilities
+
+Protecting routes: middleware auth:sanctum + abilities:<permission>
+
+Logout: POST /logout → revokes token
+
 Example:
 
 Route::post('/transactions', [TransactionController::class, 'store'])
-     ->middleware(['auth:sanctum', 'abilities:create_transaction']);
+    ->middleware(['auth:sanctum', 'abilities:create_transaction']);
 
-Only users with the corresponding ability can access the endpoint.
+# 📌 Main Endpoints
+## Authentication
+| Method | Endpoint | Description                   |
+| ------ | -------- | ----------------------------- |
+| POST   | /login   | Authenticate and return token |
+| POST   | /logout  | Revoke current token          |
 
-### 3 - Logout
-POST /logout revokes the current token
 
-## 📌 Main Endpoints
+## Transactions
+| Method | Endpoint           | Ability Required    |
+| ------ | ------------------ | ------------------- |
+| GET    | /transactions      | view\_transaction   |
+| POST   | /transactions      | create\_transaction |
+| GET    | /transactions/{id} | view\_transaction   |
+| PUT    | /transactions/{id} | update\_transaction |
+| DELETE | /transactions/{id} | delete\_transaction |
 
-### Authentication
-- Method	Endpoint	Description
-- POST	/login	Authenticate user and return token
-- POST	/logout	Revoke current token
 
-### Reports
-- Method	Endpoint	Ability Required
-- GET	/categories	view_category
-- POST	/categories	create_category
-- GET	/categories/{id}	view_category
-- PUT	/categories/{id}	edit_category
-- DELETE	/categories/{id}	delete_category
+## Categories
+| Method | Endpoint         | Ability Required |
+| ------ | ---------------- | ---------------- |
+| GET    | /categories      | view\_category   |
+| POST   | /categories      | create\_category |
+| GET    | /categories/{id} | view\_category   |
+| PUT    | /categories/{id} | update\_category |
+| DELETE | /categories/{id} | delete\_category |
 
-### Transactions
-- Method	Endpoint	Ability Required
-- GET	/transactions	view_transaction
-- POST	/transactions	create_transaction
-- GET	/transactions/{id}	view_transaction
-- PUT	/transactions/{id}	create_transaction (or edit_transaction)
-- DELETE	/transactions/{id}	delete_transaction
 
----
+## Reports
+| Method | Endpoint                    | Description                     |
+| ------ | --------------------------- | ------------------------------- |
+| GET    | /report/monthly-average     | Monthly average of transactions |
+| GET    | /report/category-comparison | Compare categories              |
+| GET    | /report/top-expenses        | Top expenses                    |
 
-## ▶️ Getting Started
 
-### 1. Clone the repository
-```bash
+## Activity Logs (Admin)
+| Method | Endpoint                  | Description                                                        |
+| ------ | ------------------------- | ------------------------------------------------------------------ |
+| GET    | /logs/activity-logs       | List all activity logs                                             |
+| GET    | /logs/activity-logs/stats | Aggregated metrics: avg duration, top endpoints, requests per user |
+
+
+# ▶️ Getting Started
+## 1. Clone repository
 git clone https://github.com/airesviotto/finance-api.git
 cd finance-api
 
-2. Install dependencies
-bash
+## 2. Install dependencies
 composer install
 
-3. Configure environment
-bash
+## 3. Configure environment
 cp .env.example .env
 php artisan key:generate
-Update .env with your database credentials.
+## Update .env with database credentials
 
-4. Run migrations & seeders
-bash
+## 4. Run migrations & seeders
 php artisan migrate --seed
 
-5. Start the server
-bash
+## 5. Start server
 php artisan serve
-API will be available at: http://127.0.0.1:8000
+
+API available at: http://127.0.0.1:8000
 
 🧪 Running Tests
-bash
 php artisan test
-📖 API Documentation
+
+# 📖 API Documentation
+
 Swagger UI available at:
-
-bash
 /api/documentation
-☁️ Deployment
-Example:
-👉 https://finance-api.onrender.com
 
-👨‍💻 Author
-Developed by Aires Viotto 🚀
+# ☁️ Deployment
+
+Example:
+👉 Finance API on Render
+
+## 👨‍💻 Author
+Aires Viotto 🚀
+Fullstack developer passionate about secure and scalable APIs
+#### GitHub: github.com/airesviotto
+
+# 💡 Highlights for recruiters:
+#### ✅ Advanced security: Roles, Permissions, Rate Limiting
+#### ✅ Audit trail with request duration, status, payload
+#### ✅ Ready for SaaS & scalable architecture
+#### ✅ Fully documented API with Swagger

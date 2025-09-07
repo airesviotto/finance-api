@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -11,10 +12,13 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function() {
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');;
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    //ADMIN
+    Route::get('/activity-logs', [ActivityLogController::class, 'index']);
 
     //USERS
     Route::get('/user/profile', [UserController::class, 'profile']);
@@ -38,7 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
     //EXPORT DATA OR FILE
-    Route::get('/transactions/export', [TransactionController::class, 'exportFile']);
+    Route::get('/transactions/export', [TransactionController::class, 'exportFile'])->middleware('throttle:export');;
     Route::get('/transactions/export-data', [TransactionController::class, 'exportData']);
     Route::post('/transactions/generate-report', [TransactionController::class, 'generateReport']);
     

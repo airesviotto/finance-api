@@ -22,6 +22,7 @@ class TransactionSeeder extends Seeder
             Transaction::create([
                 'description' => $faker->words(2, true),  // ex: "Payment Invoice"
                 'amount' => $faker->randomFloat(2, 10, 2000), // 10 a 2000
+                'original_amount' => $faker->randomFloat(2, 10, 2000), // 10 a 2000
                 'currency' => 'GBP',
                 'type' => $faker->randomElement(['income', 'expense']),
                 'date' => $faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d'),

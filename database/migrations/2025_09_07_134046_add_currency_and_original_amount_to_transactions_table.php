@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->decimal('original_amount', 10, 2)->nullable()->after('amount');
-            $table->string('currency', 3)->default('BRL')->after('original_amount');
+            $table->string('currency', 3)->default('GBP')->after('original_amount');
         });
     }
 

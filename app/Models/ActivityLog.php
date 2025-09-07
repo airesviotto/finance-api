@@ -18,4 +18,9 @@ class ActivityLog extends Model
     protected $casts = [
         'details' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-      protected $http;
+    protected $http;
 
     public function __construct(HttpResponseService $http)
     {

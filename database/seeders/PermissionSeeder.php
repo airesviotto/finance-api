@@ -29,6 +29,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete_category', 'description' => 'Can delete transactions'],
 
             ['name' => 'manage_users', 'description' => 'Can manage users'],
+            ['name' => 'manage_logs', 'description' => 'Can manage logs on the system'],
         ];
 
         foreach ($permissions as $permission) {

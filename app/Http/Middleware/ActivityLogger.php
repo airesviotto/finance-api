@@ -16,14 +16,25 @@ class ActivityLogger
      */
     public function handle(Request $request, Closure $next): Response
     {
+        //calculate time
+        $start = microtime(true);
+
         $response = $next($request);
 
+        //calculation in milisecond
+        $duration = round((microtime(true) - $start) * 1000, 2);
         if ($request->user()) {
             ActivityLog::create([
                 'user_id' => $request->user()->id,
                 'action' => $request->method() . ' ' . $request->path(),
                 'ip_address' => $request->ip(),
-                'details' => json_encode($request->all()),
+                'details'    => [
+                    'input'      => $request->all(),              // payload do body
+                    'query'      => $request->query(),            // query params da URL
+                    'user_agent' => $request->header('User-Agent', $request->server('HTTP_USER_AGENT')), // navegador/app cliente
+                    'status'     => $response->getStatusCode(),
+                    'duration_ms'=> $duration, 
+                ],
             ]);
         }
 

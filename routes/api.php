@@ -18,7 +18,8 @@ Route::middleware('guest')->group(function() {
 Route::middleware(['auth:sanctum'])->group(function () {
 
     //ADMIN
-    Route::get('/activity-logs', [ActivityLogController::class, 'index']);
+    Route::get('/logs/activity-logs', [ActivityLogController::class, 'index']);
+    Route::get('/logs/activity-logs/stats', [ActivityLogController::class, 'logStatsDetail']);
 
     //USERS
     Route::get('/user/profile', [UserController::class, 'profile']);

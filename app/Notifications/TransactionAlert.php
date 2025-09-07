@@ -19,7 +19,7 @@ class TransactionAlert extends Notification
      * @param Transaction $transaction
      * @param string $action  ("created" ou "updated")
      */
-    public function __construct(Transaction $transaction, string $action = 'created')
+    public function __construct(Transaction $transaction, string $action)
     {
         $this->transaction = $transaction;
         $this->action = $action;

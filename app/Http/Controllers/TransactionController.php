@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
 use App\Notifications\TransactionAlert;
 use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\TransactionsExport;
 use App\Jobs\SendTransactionReport;
+use App\Services\ExchangeRateService;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 class TransactionController extends Controller
 {
@@ -53,7 +53,7 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, ExchangeRateService $exchange)
     {
          /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -64,13 +64,34 @@ class TransactionController extends Controller
         $request->validate([
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'], // USD, EUR, etc.
             'type' => ['required', 'in:income,expense'],
             'date' => ['required', 'date'],
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
-        
-        $transaction = $user->transactions()->create($request->all());
+        $amount = $request->input('amount');
+        $currency = $request->input('currency', 'GBP');
+        $convertedAmount = $amount;
+
+        if(empty($currency)) {
+            $currency = 'GBP';
+        }
+
+        if ($currency !== 'GBP') {
+            $converted = $exchange->convert($amount, $currency, 'GBP');
+            $convertedAmount = $converted['amount'];
+        }
+
+        $transaction = $request->user()->transactions()->create([
+            'description' => $request->input('description'),
+            'amount' => $convertedAmount, // sempre em GBP
+            'original_amount' => $amount,
+            'currency' => $currency,
+            'type' => $request->input('type'),
+            'date' => $request->input('date'),
+            'category_id' => $request->input('category_id'),
+        ]);
 
         // Dispara a notificação
         $user->notify(new TransactionAlert($transaction, 'created'));
@@ -106,29 +127,64 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+   public function update(Request $request, $id, ExchangeRateService $exchange)
     {
-         /** @var \App\Models\User $user */
+        /** @var \App\Models\User $user */
         $user = Auth::user();
-         if(!$user->tokenCan('create_transaction')) {
+
+        if (!$user->tokenCan('create_transaction')) {
             return $this->http->forbidden('Access denied');
         }
 
         $transaction = $user->transactions()->find($id);
 
         if (!$transaction) {
-             return $this->http->notFound('Transaction not found or access denied');
+            return $this->http->notFound('Transaction not found or access denied');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'description' => ['sometimes', 'string', 'max:255'],
             'amount' => ['sometimes', 'numeric', 'min:0'],
+            'currency' => ['sometimes', 'string', 'size:3'], // USD, EUR, etc.
             'type' => ['sometimes', 'in:income,expense'],
             'date' => ['sometimes', 'date'],
             'category_id' => ['sometimes', 'exists:categories,id'],
         ]);
 
-        $transaction->update($request->all());
+        // Se amount foi enviado, recalcula
+        if ($request->has('amount')) {
+            $amount = $validated['amount'];
+            $currency = $request->input('currency', $transaction->currency ?? 'GBP');
+            $convertedAmount = $amount;
+
+            if ($currency !== 'GBP') {
+                $converted = $exchange->convert($amount, $currency, 'GBP');
+                $convertedAmount = $converted['amount'];
+            }
+
+            $transaction->amount = $convertedAmount;
+            $transaction->original_amount = $amount;
+            $transaction->currency = $currency;
+        }
+
+        // Atualiza apenas campos enviados
+        if ($request->has('description')) {
+            $transaction->description = $validated['description'];
+        }
+
+        if ($request->has('type')) {
+            $transaction->type = $validated['type'];
+        }
+
+        if ($request->has('date')) {
+            $transaction->date = $validated['date'];
+        }
+
+        if ($request->has('category_id')) {
+            $transaction->category_id = $validated['category_id'];
+        }
+
+        $transaction->save();
 
         $user->notify(new TransactionAlert($transaction, 'updated'));
 

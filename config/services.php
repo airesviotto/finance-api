@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'exchange' => [
+        'url' => env('EXCHANGE_API_URL'),
+        'key' => env('EXCHANGE_API_KEY'),
+    ],
+
 ];

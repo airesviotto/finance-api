@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -51,7 +52,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
- 
+    //EXCHANGE API EXTERNAL
+    Route::get('/exchange', [ExchangeRateController::class, 'allCurrency']);
+    Route::get('/exchange/convert', [ExchangeRateController::class, 'convert']);
+    Route::post('/exchange/transactions', [ExchangeRateController::class, 'convertTransactions']);
+    Route::post('/exchange/convert-batch', [ExchangeRateController::class, 'convertBatch']);
+
     //LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);
 });

@@ -167,7 +167,7 @@ class TransactionController extends Controller
             $transaction->currency = $currency;
         }
 
-        // Atualiza apenas campos enviados
+        // Update only request sent
         if ($request->has('description')) {
             $transaction->description = $validated['description'];
         }
@@ -262,6 +262,8 @@ class TransactionController extends Controller
                                     'id' => $transaction->id,
                                     'description' => $transaction->description,
                                     'amount' => $transaction->amount,
+                                    'original_amount' => $transaction->original_amount,
+                                    'currency' => $transaction->currency,
                                     'type' => $transaction->type,
                                     'date' => $transaction->date->format('Y-m-d'),
                                     'category' => $transaction->category ? $transaction->category->name : null,

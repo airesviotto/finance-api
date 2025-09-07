@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/exchange/convert', [ExchangeRateController::class, 'convert']);
     Route::post('/exchange/transactions', [ExchangeRateController::class, 'convertTransactions']);
     Route::post('/exchange/convert-batch', [ExchangeRateController::class, 'convertBatch']);
+
+    //REPORTS
+    Route::get('/report/monthly-average', [ReportController::class, 'monthlyAverage']);
+    Route::get('/report/category-comparison', [ReportController::class, 'categoryComparison']);
+    Route::get('/report/top-expenses', [ReportController::class, 'topExpenses']);
 
     //LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);

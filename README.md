@@ -138,15 +138,22 @@ API available at: http://127.0.0.1:8000
 🧪 Running Tests
 php artisan test
 
-# 📖 API Documentation
+## 📝 Interactive API Documentation
 
-Swagger UI available at:
+You can explore all endpoints interactively using Swagger UI:
+
+### Online Swagger Editor
+Open the Swagger JSON in the [Swagger Editor](https://editor.swagger.io/):
+[Open in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/airesviotto/finance-api/main/docs/api-docs.json)
+
+### Local Swagger UI
+1. Serve the API locally:  
+php artisan serve
+
+### Swagger UI available at:
 /api/documentation
 
-# ☁️ Deployment
-
-Example:
-👉 Finance API on Render
+This UI is interactive: you can test requests and see example responses.
 
 ## 👨‍💻 Author
 Aires Viotto 🚀

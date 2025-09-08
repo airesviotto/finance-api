@@ -11,7 +11,12 @@ use App\Jobs\SendTransactionReport;
 use App\Services\ExchangeRateService;
 use Maatwebsite\Excel\Facades\Excel;
 
-
+/**
+ * @OA\Tag(
+ *     name="Transactions",
+ *     description="Operations related to user financial transactions"
+ * )
+ */
 class TransactionController extends Controller
 {
     protected $http;
@@ -21,11 +26,47 @@ class TransactionController extends Controller
         $this->http = $http;
     }
 
+   
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *     path="/api/transactions",
+     *     tags={"Transactions"},
+     *     summary="List transactions",
+     *     description="Retrieve a paginated list of the authenticated user's transactions.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         description="Number of results per page",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of transactions",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="data", type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="description", type="string", example="Grocery shopping"),
+     *                     @OA\Property(property="amount", type="number", format="float", example=125.50),
+     *                     @OA\Property(property="currency", type="string", example="GBP"),
+     *                     @OA\Property(property="type", type="string", enum={"income","expense"}, example="expense"),
+     *                     @OA\Property(property="date", type="string", format="date", example="2025-09-08"),
+     *                     @OA\Property(property="category_id", type="integer", example=2)
+     *                 )
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Transaction list")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Access denied"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
      */
     public function index(Request $request)
     {
+       
          /** @var \App\Models\User $user */
         $user = Auth::user();
         if(!$user->tokenCan('view_all_transactions')) {
@@ -53,8 +94,32 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+     /**
+         * @OA\Post(
+         *     path="/api/transactions",
+         *     summary="Create a new transaction",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\RequestBody(
+         *         required=true,
+         *         @OA\JsonContent(
+         *             required={"description","amount","type","date","category_id"},
+         *             @OA\Property(property="description", type="string", example="Grocery shopping"),
+         *             @OA\Property(property="amount", type="number", format="float", example=120.50),
+         *             @OA\Property(property="currency", type="string", example="USD"),
+         *             @OA\Property(property="type", type="string", enum={"income","expense"}, example="expense"),
+         *             @OA\Property(property="date", type="string", format="date", example="2025-09-08"),
+         *             @OA\Property(property="category_id", type="integer", example=1)
+         *         )
+         *     ),
+         *     @OA\Response(response=201, description="Transaction created successfully"),
+         *     @OA\Response(response=400, description="Validation error"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function store(Request $request, ExchangeRateService $exchange)
     {
+
          /** @var \App\Models\User $user */
         $user = Auth::user();
         if(!$user->tokenCan('create_transaction')) {
@@ -105,8 +170,27 @@ class TransactionController extends Controller
     /**
      * Display the specified resource.
      */
+     /**
+         * @OA\Get(
+         *     path="/api/transactions/{id}",
+         *     summary="Get a transaction by ID",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\Parameter(
+         *         name="id",
+         *         in="path",
+         *         required=true,
+         *         description="Transaction ID",
+         *         @OA\Schema(type="integer")
+         *     ),
+         *     @OA\Response(response=200, description="Transaction retrieved successfully"),
+         *     @OA\Response(response=404, description="Transaction not found"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function show($id)
     {   
+
          /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!$user->tokenCan('view_transaction')) {
@@ -127,8 +211,38 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    /**
+         * @OA\Put(
+         *     path="/api/transactions/{id}",
+         *     summary="Update a transaction",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\Parameter(
+         *         name="id",
+         *         in="path",
+         *         required=true,
+         *         description="Transaction ID",
+         *         @OA\Schema(type="integer")
+         *     ),
+         *     @OA\RequestBody(
+         *         required=false,
+         *         @OA\JsonContent(
+         *             @OA\Property(property="description", type="string", example="Updated description"),
+         *             @OA\Property(property="amount", type="number", format="float", example=200.00),
+         *             @OA\Property(property="currency", type="string", example="EUR"),
+         *             @OA\Property(property="type", type="string", enum={"income","expense"}, example="income"),
+         *             @OA\Property(property="date", type="string", format="date", example="2025-09-10"),
+         *             @OA\Property(property="category_id", type="integer", example=2)
+         *         )
+         *     ),
+         *     @OA\Response(response=200, description="Transaction updated successfully"),
+         *     @OA\Response(response=404, description="Transaction not found"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
    public function update(Request $request, $id, ExchangeRateService $exchange)
     {
+        
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -194,8 +308,29 @@ class TransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    
+        /**
+         * @OA\Delete(
+         *     path="/api/transactions/{id}",
+         *     summary="Delete a transaction",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\Parameter(
+         *         name="id",
+         *         in="path",
+         *         required=true,
+         *         description="Transaction ID",
+         *         @OA\Schema(type="integer")
+         *     ),
+         *     @OA\Response(response=200, description="Transaction deleted successfully"),
+         *     @OA\Response(response=404, description="Transaction not found"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function destroy($id)
     {
+
+
          /** @var \App\Models\User $user */
         $user = Auth::user();
         if(!$user->tokenCan('delete_transaction')) {
@@ -215,8 +350,21 @@ class TransactionController extends Controller
 
 
     //Exporting archieves
+     /**
+         * @OA\Get(
+         *     path="/api/transactions/export",
+         *     summary="Export transactions to file",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\Parameter(name="format", in="query", description="File format (xlsx or csv)", required=false, @OA\Schema(type="string")),
+         *     @OA\Response(response=200, description="File download response"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function exportFile(Request $request)
     {
+
+       
         
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -240,8 +388,21 @@ class TransactionController extends Controller
     }
 
     //export DATA to download as PDF,CSV or XLSX
+    
+        /**
+         * @OA\Get(
+         *     path="/api/transactions/export-data",
+         *     summary="Export transactions as JSON data",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\Response(response=200, description="Transactions export data"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function exportData(Request $request)
     {
+
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -275,8 +436,27 @@ class TransactionController extends Controller
     }
 
     //create report
+     /**
+         * @OA\Post(
+         *     path="/api/transactions/generate-report",
+         *     summary="Generate transaction report asynchronously",
+         *     tags={"Transactions"},
+         *     security={{"sanctum":{}}},
+         *     @OA\RequestBody(
+         *         required=false,
+         *         @OA\JsonContent(
+         *             @OA\Property(property="type", type="string", enum={"income","expense"}),
+         *             @OA\Property(property="start_date", type="string", format="date"),
+         *             @OA\Property(property="end_date", type="string", format="date")
+         *         )
+         *     ),
+         *     @OA\Response(response=200, description="Report generation queued"),
+         *     @OA\Response(response=403, description="Forbidden")
+         * )
+         */
     public function generateReport(Request $request)
     {
+
         $user = Auth::user();
         /** @var \App\Models\User $user */
         if(!$user->tokenCan('view_all_transactions')) {

@@ -8,6 +8,12 @@ use App\Models\Transaction;
 use App\Services\HttpResponseService;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @OA\Tag(
+ *     name="Dashboard",
+ *     description="Operations related to user information dashboard"
+ * )
+ */
 class DashboardController extends Controller
 {
     protected $http;
@@ -17,6 +23,17 @@ class DashboardController extends Controller
         $this->http = $http;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/dashboard",
+     *     tags={"Dashboard"},
+     *     summary="Retrieve user's finance summary",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, description="Dashboard summary returned"),
+     *     @OA\Response(response=403, description="Access denied"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
+     */
     public function summary(Request $request)
     {   
         /** @var \App\Models\User $user */
@@ -61,7 +78,17 @@ class DashboardController extends Controller
         ]);
     }
 
-
+    /**
+     * @OA\Get(
+     *     path="/api/dashboard/advanced",
+     *     tags={"Dashboard"},
+     *     summary="Retrieve advanced financial metrics",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, description="Advanced dashboard metrics returned"),
+     *     @OA\Response(response=403, description="Access denied"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
+     */
     public function advancedSummary(Request $request)
     {
 

@@ -7,6 +7,12 @@ use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @OA\Tag(
+ *     name="Category",
+ *     description="Operations related to user categories"
+ * )
+ */
 class CategoryController extends Controller
 {
     protected $http;
@@ -15,8 +21,16 @@ class CategoryController extends Controller
     {
         $this->http = $http;
     }
+    
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *     path="/api/categories",
+     *     tags={"Categories"},
+     *     summary="List all categories",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, description="List of categories"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
      */
     public function index()
     {
@@ -32,7 +46,21 @@ class CategoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *     path="/api/categories",
+     *     tags={"Categories"},
+     *     summary="Create a new category",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Entertainment")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Category created"),
+     *     @OA\Response(response=403, description="Access denied")
+     * )
      */
     public function store(Request $request)
     {   
@@ -54,7 +82,20 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *     path="/api/categories/{id}",
+     *     tags={"Categories"},
+     *     summary="Retrieve a single category",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Category details"),
+     *     @OA\Response(response=404, description="Category not found")
+     * )
      */
     public function show($id)
     {
@@ -74,7 +115,27 @@ class CategoryController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Put(
+     *     path="/api/categories/{id}",
+     *     tags={"Categories"},
+     *     summary="Update a category",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Updated Category Name")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Category updated"),
+     *     @OA\Response(response=403, description="Access denied"),
+     *     @OA\Response(response=404, description="Category not found")
+     * )
      */
     public function update(Request $request, $id)
     {
@@ -100,8 +161,22 @@ class CategoryController extends Controller
         return $this->http->ok($category, 'Category updated successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
+   /**
+     * @OA\Delete(
+     *     path="/api/categories/{id}",
+     *     tags={"Categories"},
+     *     summary="Delete a category",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Category deleted"),
+     *     @OA\Response(response=403, description="Access denied"),
+     *     @OA\Response(response=404, description="Category not found")
+     * )
      */
     public function destroy($id)
     {

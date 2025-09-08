@@ -7,6 +7,12 @@ use App\Services\HttpResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @OA\Tag(
+ *     name="Auth",
+ *     description="Operations related to user authentication"
+ * )
+ */
 class AuthController extends Controller
 {
     protected $http;
@@ -16,6 +22,23 @@ class AuthController extends Controller
         $this->http = $http;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Authentication"},
+     *     summary="Authenticate user and return token",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="secret")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Token generated successfully"),
+     *     @OA\Response(response=401, description="Invalid credentials")
+     * )
+     */
     public function login(Request $request) {
 
        
@@ -48,6 +71,16 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     tags={"Authentication"},
+     *     summary="Revoke current token",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, description="Logged out successfully"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
+     */
     public function logout(Request $request) {
         
         //  /** @var \App\Models\User $user */

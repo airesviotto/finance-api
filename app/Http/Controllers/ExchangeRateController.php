@@ -6,6 +6,12 @@ use App\Http\Requests\ConvertTransactionsRequest;
 use App\Services\ExchangeRateService;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Tag(
+ *     name="ExchangeRate",
+ *     description="Operations related to exchanges"
+ * )
+ */
 class ExchangeRateController extends Controller
 {
      protected $exchange;
@@ -15,6 +21,15 @@ class ExchangeRateController extends Controller
         $this->exchange = $exchange;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/exchange",
+     *     tags={"Exchange"},
+     *     summary="List all supported currencies and rates",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, description="List of currencies and rates")
+     * )
+     */
     public function allCurrency(Request $request)
     {
         $base = $request->get('base', 'GBP'); // default currancy
@@ -31,7 +46,18 @@ class ExchangeRateController extends Controller
         ]);
     }
 
-   
+   /**
+     * @OA\Get(
+     *     path="/api/exchange/convert",
+     *     tags={"Exchange"},
+     *     summary="Convert an amount from one currency to another",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="amount", in="query", required=true, @OA\Schema(type="number")),
+     *     @OA\Parameter(name="from", in="query", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="to", in="query", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Conversion result")
+     * )
+     */
     public function convert(Request $request)
     {
 
@@ -56,6 +82,29 @@ class ExchangeRateController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/exchange/transactions",
+     *     tags={"Exchange"},
+     *     summary="Convert multiple transactions to a target currency",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"transactions","target_currency"},
+     *             @OA\Property(property="transactions", type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="amount", type="number"),
+     *                     @OA\Property(property="currency", type="string")
+     *                 )
+     *             ),
+     *             @OA\Property(property="target_currency", type="string", example="GBP")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Transactions converted")
+     * )
+     */
     public function convertTransactions(Request $request)
     {
         $request->validate([

@@ -141,16 +141,13 @@ php artisan test
 ## 📝 Interactive API Documentation
 
 You can explore all endpoints interactively using Swagger UI:
+(https://airesviotto.github.io/finance-api/)
 
 ### Online Swagger Editor
 Open the Swagger JSON in the [Swagger Editor](https://editor.swagger.io/):
 [Open in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/airesviotto/finance-api/main/docs/api-docs.json)
 
-### Local Swagger UI
-1. Serve the API locally:  
-php artisan serve
-
-### Swagger UI available at:
+### Local Swagger UI available at:
 /api/documentation
 
 This UI is interactive: you can test requests and see example responses.
